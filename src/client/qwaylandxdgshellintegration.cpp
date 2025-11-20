@@ -35,20 +35,19 @@
 
 #include <QtWaylandClient/private/qwaylandwindow_p.h>
 #include <QtWaylandClient/private/qwaylanddisplay_p.h>
-#include <QtWaylandClient/private/qwaylandxdgsurface_p.h>
+#include <QtWaylandClient/private/qwaylandxdgtoplevel_p.h>
 #include <QtWaylandClient/private/qwaylandxdgpopup_p.h>
-#include <QtWaylandClient/private/qwaylandxdgshell_p.h>
+#include <QtWaylandClient/private/qwaylandxdgwmbase_p.h>
 
 QT_BEGIN_NAMESPACE
 
 namespace QtWaylandClient {
 
 QWaylandXdgShellIntegration::QWaylandXdgShellIntegration(QWaylandDisplay *display)
-    : m_xdgShell(Q_NULLPTR)
 {
     Q_FOREACH (QWaylandDisplay::RegistryGlobal global, display->globals()) {
         if (global.interface == QLatin1String("xdg_shell")) {
-            m_xdgShell = new QWaylandXdgShell(display->wl_registry(), global.id);
+            m_xdgWmBase = new QWaylandXdgWmBase(display->wl_registry(), global.id, 3);
             break;
         }
     }
@@ -57,9 +56,9 @@ QWaylandXdgShellIntegration::QWaylandXdgShellIntegration(QWaylandDisplay *displa
 QWaylandShellSurface *QWaylandXdgShellIntegration::createShellSurface(QWaylandWindow *window)
 {
     if (window->window()->type() == Qt::WindowType::Popup)
-        return m_xdgShell->createXdgPopup(window);
+        return m_xdgWmBase->createXdgPopup(window);
     else
-        return m_xdgShell->createXdgSurface(window);
+        return m_xdgWmBase->createXdgToplevel(window);
 }
 
 }

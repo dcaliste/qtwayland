@@ -31,8 +31,8 @@
 **
 ****************************************************************************/
 
-#ifndef QWAYLANDXDGSHELL_H
-#define QWAYLANDXDGSHELL_H
+#ifndef QWAYLANDXDGWMBASE_H
+#define QWAYLANDXDGWMBASE_H
 
 //
 //  W A R N I N G
@@ -51,7 +51,6 @@
 
 #include <QtWaylandClient/private/qwayland-xdg-shell.h>
 #include <QtWaylandClient/private/qwaylandclientexport_p.h>
-#include "qwaylandshellsurface_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -60,26 +59,25 @@ class QWindow;
 namespace QtWaylandClient {
 
 class QWaylandWindow;
-class QWaylandInputDevice;
-class QWaylandXdgSurface;
+class QWaylandXdgToplevel;
 class QWaylandXdgPopup;
 
-class Q_WAYLAND_CLIENT_EXPORT QWaylandXdgShell : public QtWayland::xdg_shell
+class Q_WAYLAND_CLIENT_EXPORT QWaylandXdgWmBase : public QtWayland::xdg_wm_base
 {
 public:
-    QWaylandXdgShell(struct ::xdg_shell *shell);
-    QWaylandXdgShell(struct ::wl_registry *registry, uint32_t id);
-    virtual ~QWaylandXdgShell();
+    QWaylandXdgWmBase(struct ::xdg_wm_base *shell);
+    QWaylandXdgWmBase(struct ::wl_registry *registry, uint32_t id, uint32_t version);
+    virtual ~QWaylandXdgWmBase();
 
-    QWaylandXdgSurface *createXdgSurface(QWaylandWindow *window);
+    QWaylandXdgToplevel *createXdgToplevel(QWaylandWindow *window);
     QWaylandXdgPopup *createXdgPopup(QWaylandWindow *window);
 
 private:
-    void xdg_shell_ping(uint32_t serial) Q_DECL_OVERRIDE;
+    void xdg_wm_base_ping(uint32_t serial) Q_DECL_OVERRIDE;
 };
 
 QT_END_NAMESPACE
 
 }
 
-#endif // QWAYLANDXDGSHELL_H
+#endif // QWAYLANDXDGWMBASE_H

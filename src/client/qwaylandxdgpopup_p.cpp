@@ -36,23 +36,38 @@
 #include "qwaylandwindow_p.h"
 #include "qwaylanddisplay_p.h"
 #include "qwaylandextendedsurface_p.h"
+#include "qwaylandinputdevice_p.h"
+#include "qwaylandscreen_p.h"
+#include "qwaylandxdgwmbase_p.h"
 
 QT_BEGIN_NAMESPACE
 
 namespace QtWaylandClient {
 
-QWaylandXdgPopup::QWaylandXdgPopup(struct ::xdg_popup *popup, QWaylandWindow *window)
+QWaylandXdgPopup::QWaylandXdgPopup(QWaylandXdgWmBase *shell, QtWayland::xdg_surface *parentSurface, QWaylandWindow *window)
     : QWaylandShellSurface(window)
-    , QtWayland::xdg_popup(popup)
+    , QtWayland::xdg_positioner(shell->create_positioner())
+    , QtWayland::xdg_surface(shell->get_xdg_surface(window->object()))
+    , QtWayland::xdg_popup(get_popup(parentSurface->object(), static_cast<QtWayland::xdg_positioner*>(this)->object()))
     , m_extendedWindow(nullptr)
 {
     if (window->display()->windowExtension())
         m_extendedWindow = new QWaylandExtendedSurface(window);
+
+    QWaylandWindow *parentWindow = window->transientParent();
+    QWaylandInputDevice *inputDevice = window->display()->lastInputDevice();
+    ::wl_seat *seat = inputDevice->wl_seat();
+    uint serial = inputDevice->serial();
+    QPoint position = window->geometry().topLeft();
+    int x = position.x() + parentWindow->frameMargins().left();
+    int y = position.y() + parentWindow->frameMargins().top();
 }
 
 QWaylandXdgPopup::~QWaylandXdgPopup()
 {
-    xdg_popup_destroy(object());
+    QtWayland::xdg_popup::destroy();
+    QtWayland::xdg_surface::destroy();
+    QtWayland::xdg_positioner::destroy();
     delete m_extendedWindow;
 }
 

@@ -31,7 +31,7 @@
 **
 ****************************************************************************/
 
-#include "qwaylandxdgsurface_p.h"
+#include "qwaylandxdgtoplevel_p.h"
 
 #include "qwaylanddisplay_p.h"
 #include "qwaylandwindow_p.h"
@@ -39,16 +39,17 @@
 #include "qwaylandabstractdecoration_p.h"
 #include "qwaylandscreen_p.h"
 #include "qwaylandextendedsurface_p.h"
-#include "qwaylandxdgshell_p.h"
+#include "qwaylandxdgwmbase_p.h"
 
 
 QT_BEGIN_NAMESPACE
 
 namespace QtWaylandClient {
 
-QWaylandXdgSurface::QWaylandXdgSurface(QWaylandXdgShell *shell, QWaylandWindow *window)
+QWaylandXdgToplevel::QWaylandXdgToplevel(QWaylandXdgWmBase *shell, QWaylandWindow *window)
     : QWaylandShellSurface(window)
     , QtWayland::xdg_surface(shell->get_xdg_surface(window->object()))
+    , QtWayland::xdg_toplevel(get_toplevel())
     , m_window(window)
     , m_shell(shell)
     , m_maximized(false)
@@ -61,48 +62,49 @@ QWaylandXdgSurface::QWaylandXdgSurface(QWaylandXdgShell *shell, QWaylandWindow *
         m_extendedWindow = new QWaylandExtendedSurface(window);
 }
 
-QWaylandXdgSurface::~QWaylandXdgSurface()
+QWaylandXdgToplevel::~QWaylandXdgToplevel()
 {
     if (m_active)
         window()->display()->handleWindowDeactivated(m_window);
 
-    xdg_surface_destroy(object());
+    QtWayland::xdg_toplevel::destroy();
+    QtWayland::xdg_surface::destroy();
     delete m_extendedWindow;
 }
 
-void QWaylandXdgSurface::resize(QWaylandInputDevice *inputDevice, enum wl_shell_surface_resize edges)
+void QWaylandXdgToplevel::resize(QWaylandInputDevice *inputDevice, enum wl_shell_surface_resize edges)
 {
     // May need some conversion if types get incompatibles, ATM they're identical
     enum resize_edge const * const arg = reinterpret_cast<enum resize_edge const * const>(&edges);
     resize(inputDevice, *arg);
 }
 
-void QWaylandXdgSurface::resize(QWaylandInputDevice *inputDevice, enum resize_edge edges)
+void QWaylandXdgToplevel::resize(QWaylandInputDevice *inputDevice, enum resize_edge edges)
 {
     resize(inputDevice->wl_seat(),
            inputDevice->serial(),
            edges);
 }
 
-void QWaylandXdgSurface::move(QWaylandInputDevice *inputDevice)
+void QWaylandXdgToplevel::move(QWaylandInputDevice *inputDevice)
 {
     move(inputDevice->wl_seat(),
          inputDevice->serial());
 }
 
-void QWaylandXdgSurface::setMaximized()
+void QWaylandXdgToplevel::setMaximized()
 {
     if (!m_maximized)
         set_maximized();
 }
 
-void QWaylandXdgSurface::setFullscreen()
+void QWaylandXdgToplevel::setFullscreen()
 {
     if (!m_fullscreen)
         set_fullscreen(Q_NULLPTR);
 }
 
-void QWaylandXdgSurface::setNormal()
+void QWaylandXdgToplevel::setNormal()
 {
     if (m_fullscreen || m_maximized  || m_minimized) {
         if (m_maximized) {
@@ -116,68 +118,68 @@ void QWaylandXdgSurface::setNormal()
     }
 }
 
-void QWaylandXdgSurface::setMinimized()
+void QWaylandXdgToplevel::setMinimized()
 {
     m_minimized = true;
     set_minimized();
 }
 
-void QWaylandXdgSurface::setTopLevel()
+void QWaylandXdgToplevel::setTopLevel()
 {
     // There's no xdg_shell_surface API for this, ignoring
 }
 
-void QWaylandXdgSurface::updateTransientParent(QWindow *parent)
+void QWaylandXdgToplevel::updateTransientParent(QWindow *parent)
 {
     QWaylandWindow *parent_wayland_window = static_cast<QWaylandWindow *>(parent->handle());
     if (!parent_wayland_window)
         return;
-    auto parentXdgSurface = qobject_cast<QWaylandXdgSurface *>(parent_wayland_window->shellSurface());
-    Q_ASSERT(parentXdgSurface);
-    set_parent(parentXdgSurface->object());
+    auto parentXdgToplevel = qobject_cast<QWaylandXdgToplevel *>(parent_wayland_window->shellSurface());
+    Q_ASSERT(parentXdgToplevel);
+    set_parent(parentXdgToplevel->object());
 }
 
-void QWaylandXdgSurface::setTitle(const QString & title)
+void QWaylandXdgToplevel::setTitle(const QString & title)
 {
-    return QtWayland::xdg_surface::set_title(title);
+    return set_title(title);
 }
 
-void QWaylandXdgSurface::setAppId(const QString & appId)
+void QWaylandXdgToplevel::setAppId(const QString & appId)
 {
-    return QtWayland::xdg_surface::set_app_id(appId);
+    return set_app_id(appId);
 }
 
-void QWaylandXdgSurface::raise()
+void QWaylandXdgToplevel::raise()
 {
     if (m_extendedWindow)
         m_extendedWindow->raise();
 }
 
-void QWaylandXdgSurface::lower()
+void QWaylandXdgToplevel::lower()
 {
     if (m_extendedWindow)
         m_extendedWindow->lower();
 }
 
-void QWaylandXdgSurface::setContentOrientationMask(Qt::ScreenOrientations orientation)
+void QWaylandXdgToplevel::setContentOrientationMask(Qt::ScreenOrientations orientation)
 {
     if (m_extendedWindow)
         m_extendedWindow->setContentOrientationMask(orientation);
 }
 
-void QWaylandXdgSurface::setWindowFlags(Qt::WindowFlags flags)
+void QWaylandXdgToplevel::setWindowFlags(Qt::WindowFlags flags)
 {
     if (m_extendedWindow)
         m_extendedWindow->setWindowFlags(flags);
 }
 
-void QWaylandXdgSurface::sendProperty(const QString &name, const QVariant &value)
+void QWaylandXdgToplevel::sendProperty(const QString &name, const QVariant &value)
 {
     if (m_extendedWindow)
         m_extendedWindow->updateGenericProperty(name, value);
 }
 
-void QWaylandXdgSurface::xdg_surface_configure(int32_t width, int32_t height, struct wl_array *states,uint32_t serial)
+void QWaylandXdgToplevel::xdg_toplevel_configure(int32_t width, int32_t height, struct wl_array *states)
 {
     uint32_t *state = reinterpret_cast<uint32_t*>(states->data);
     size_t numStates = states->size / sizeof(uint32_t);
@@ -187,19 +189,20 @@ void QWaylandXdgSurface::xdg_surface_configure(int32_t width, int32_t height, st
 
     for (size_t i = 0; i < numStates; i++) {
         switch (state[i]) {
-        case XDG_SURFACE_STATE_MAXIMIZED:
+        case state_maximized:
             aboutToMaximize = ((width > 0) && (height > 0));
             break;
-        case XDG_SURFACE_STATE_FULLSCREEN:
+        case state_fullscreen:
             aboutToFullScreen = true;
             break;
-        case XDG_SURFACE_STATE_RESIZING:
+        case state_resizing:
             m_normalSize = QSize(width, height);
             break;
-        case XDG_SURFACE_STATE_ACTIVATED:
+        case state_activated:
             aboutToActivate = true;
             break;
         default:
+            qWarning() << "implement missing top level state";
             break;
         }
     }
@@ -240,11 +243,14 @@ void QWaylandXdgSurface::xdg_surface_configure(int32_t width, int32_t height, st
     } else {
         m_window->configure(0, width, height);
     }
+}
 
+void QWaylandXdgToplevel::xdg_surface_configure(uint32_t serial)
+{
     ack_configure(serial);
 }
 
-void QWaylandXdgSurface::xdg_surface_close()
+void QWaylandXdgToplevel::xdg_toplevel_close()
 {
     m_window->window()->close();
 }

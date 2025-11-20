@@ -31,8 +31,8 @@
 **
 ****************************************************************************/
 
-#ifndef QWAYLANDXDGSURFACE_H
-#define QWAYLANDXDGSURFACE_H
+#ifndef QWAYLANDXDGTOPLEVEL_H
+#define QWAYLANDXDGTOPLEVEL_H
 
 //
 //  W A R N I N G
@@ -63,22 +63,25 @@ namespace QtWaylandClient {
 class QWaylandWindow;
 class QWaylandInputDevice;
 class QWaylandExtendedSurface;
-class QWaylandXdgShell;
+class QWaylandXdgWmBase;
 
-class Q_WAYLAND_CLIENT_EXPORT QWaylandXdgSurface : public QWaylandShellSurface
+class Q_WAYLAND_CLIENT_EXPORT QWaylandXdgToplevel : public QWaylandShellSurface
         , public QtWayland::xdg_surface
+        , public QtWayland::xdg_toplevel
 {
     Q_OBJECT
 public:
-    QWaylandXdgSurface(QWaylandXdgShell *shell, QWaylandWindow *window);
-    virtual ~QWaylandXdgSurface();
+    QWaylandXdgToplevel(QWaylandXdgWmBase *shell, QWaylandWindow *window);
+    virtual ~QWaylandXdgToplevel();
 
-    using QtWayland::xdg_surface::resize;
+    using QtWayland::xdg_toplevel::object;
+
+    using QtWayland::xdg_toplevel::resize;
     void resize(QWaylandInputDevice *inputDevice, enum resize_edge edges);
 
     void resize(QWaylandInputDevice *inputDevice, enum wl_shell_surface_resize edges) Q_DECL_OVERRIDE;
 
-    using QtWayland::xdg_surface::move;
+    using QtWayland::xdg_toplevel::move;
     void move(QWaylandInputDevice *inputDevice) Q_DECL_OVERRIDE;
 
     void setTitle(const QString &title) Q_DECL_OVERRIDE;
@@ -106,7 +109,7 @@ private:
 
 private:
     QWaylandWindow *m_window;
-    QWaylandXdgShell* m_shell;
+    QWaylandXdgWmBase* m_shell;
     bool m_maximized;
     bool m_minimized;
     bool m_fullscreen;
@@ -115,11 +118,11 @@ private:
     QMargins m_margins;
     QWaylandExtendedSurface *m_extendedWindow;
 
-    void xdg_surface_configure(int32_t width,
-                               int32_t height,
-                               struct wl_array *states,
-                               uint32_t serial) Q_DECL_OVERRIDE;
-    void xdg_surface_close() Q_DECL_OVERRIDE;
+    void xdg_surface_configure(uint32_t serial) Q_DECL_OVERRIDE;
+    void xdg_toplevel_configure(int32_t width,
+                                int32_t height,
+                                struct wl_array *states) Q_DECL_OVERRIDE;
+    void xdg_toplevel_close() Q_DECL_OVERRIDE;
 
     friend class QWaylandWindow;
 };

@@ -31,14 +31,12 @@
 **
 ****************************************************************************/
 
-#include "qwaylandxdgshell_p.h"
+#include "qwaylandxdgwmbase_p.h"
 
 #include "qwaylanddisplay_p.h"
 #include "qwaylandwindow_p.h"
-#include "qwaylandinputdevice_p.h"
-#include "qwaylandscreen_p.h"
 #include "qwaylandxdgpopup_p.h"
-#include "qwaylandxdgsurface_p.h"
+#include "qwaylandxdgtoplevel_p.h"
 
 #include <QtCore/QDebug>
 
@@ -46,41 +44,45 @@ QT_BEGIN_NAMESPACE
 
 namespace QtWaylandClient {
 
-QWaylandXdgShell::QWaylandXdgShell(struct ::xdg_shell *shell)
-    : QtWayland::xdg_shell(shell)
+QWaylandXdgWmBase::QWaylandXdgWmBase(struct ::xdg_wm_base *shell)
+    : QtWayland::xdg_wm_base(shell)
 {
 }
 
-QWaylandXdgShell::QWaylandXdgShell(struct ::wl_registry *registry, uint32_t id)
-    : QtWayland::xdg_shell(registry, id, 1)
+QWaylandXdgWmBase::QWaylandXdgWmBase(struct ::wl_registry *registry, uint32_t id, uint32_t version)
+    : QtWayland::xdg_wm_base(registry, id, version)
 {
-    use_unstable_version(QtWayland::xdg_shell::version_current);
 }
 
-QWaylandXdgShell::~QWaylandXdgShell()
+QWaylandXdgWmBase::~QWaylandXdgWmBase()
 {
-    xdg_shell_destroy(object());
+    destroy();
 }
 
-QWaylandXdgSurface *QWaylandXdgShell::createXdgSurface(QWaylandWindow *window)
+QWaylandXdgToplevel *QWaylandXdgWmBase::createXdgToplevel(QWaylandWindow *window)
 {
-    return new QWaylandXdgSurface(this, window);
+    return new QWaylandXdgToplevel(this, window);
 }
 
-QWaylandXdgPopup *QWaylandXdgShell::createXdgPopup(QWaylandWindow *window)
+QWaylandXdgPopup *QWaylandXdgWmBase::createXdgPopup(QWaylandWindow *window)
 {
-    QWaylandWindow *parentWindow = window->transientParent();
-    ::wl_surface *parentSurface = parentWindow->object();
-    QWaylandInputDevice *inputDevice = window->display()->lastInputDevice();
-    ::wl_seat *seat = inputDevice->wl_seat();
-    uint serial = inputDevice->serial();
-    QPoint position = window->geometry().topLeft();
-    int x = position.x() + parentWindow->frameMargins().left();
-    int y = position.y() + parentWindow->frameMargins().top();
-    return new QWaylandXdgPopup(get_xdg_popup(window->object(), parentSurface, seat, serial, x, y), window);
+    QtWayland::xdg_surface *parentSurface = nullptr;
+    QWaylandXdgToplevel *xdgToplevel = qobject_cast<QWaylandXdgToplevel *>(window->transientParent()->shellSurface());
+    if (xdgToplevel) {
+        parentSurface = static_cast<QtWayland::xdg_surface*>(xdgToplevel);
+    } else {
+        QWaylandXdgPopup *xdgPopup = qobject_cast<QWaylandXdgPopup *>(window->transientParent()->shellSurface());
+        if (xdgPopup)
+            parentSurface = static_cast<QtWayland::xdg_surface*>(xdgPopup);
+    }
+    if (parentSurface) {
+        return new QWaylandXdgPopup(this, parentSurface, window);
+    } else {
+        return nullptr;
+    }
 }
 
-void QWaylandXdgShell::xdg_shell_ping(uint32_t serial)
+void QWaylandXdgWmBase::xdg_wm_base_ping(uint32_t serial)
 {
     pong(serial);
 }

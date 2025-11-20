@@ -40,7 +40,7 @@
 #include "qwaylandscreen_p.h"
 #include "qwaylandshellsurface_p.h"
 #include "qwaylandwlshellsurface_p.h"
-#include "qwaylandxdgsurface_p.h"
+#include "qwaylandxdgtoplevel_p.h"
 #include "qwaylandsubsurface_p.h"
 #include "qwaylandabstractdecoration_p.h"
 #include "qwaylandwindowmanagerintegration_p.h"
@@ -561,11 +561,11 @@ bool QWaylandWindow::createDecoration()
 {
     // so far only xdg-shell support this "unminimize" trick, may be moved elsewhere
     if (mState == Qt::WindowMinimized) {
-        QWaylandXdgSurface *xdgSurface = qobject_cast<QWaylandXdgSurface *>(mShellSurface);
-        if ( xdgSurface ) {
-            if (xdgSurface->isFullscreen()) {
+        QWaylandXdgToplevel *xdgToplevel = qobject_cast<QWaylandXdgToplevel *>(mShellSurface);
+        if ( xdgToplevel ) {
+            if (xdgToplevel->isFullscreen()) {
                 setWindowStateInternal(Qt::WindowFullScreen);
-            } else if (xdgSurface->isMaximized()) {
+            } else if (xdgToplevel->isMaximized()) {
                 setWindowStateInternal(Qt::WindowMaximized);
             } else {
                 setWindowStateInternal(Qt::WindowNoState);

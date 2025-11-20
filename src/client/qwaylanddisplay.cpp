@@ -41,8 +41,6 @@
 #include "qwaylandclipboard_p.h"
 #include "qwaylanddatadevicemanager_p.h"
 #include "qwaylandhardwareintegration_p.h"
-#include "qwaylandxdgshell_p.h"
-#include "qwaylandxdgsurface_p.h"
 #include "qwaylandwlshellsurface_p.h"
 
 #include "qwaylandwindowmanagerintegration_p.h"
@@ -55,7 +53,6 @@
 #include "qwaylandqtkey_p.h"
 
 #include <QtWaylandClient/private/qwayland-text.h>
-#include <QtWaylandClient/private/qwayland-xdg-shell.h>
 
 #include <QtCore/QAbstractEventDispatcher>
 #include <QtGui/private/qguiapplication_p.h>

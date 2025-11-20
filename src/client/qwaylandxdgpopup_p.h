@@ -59,13 +59,16 @@ namespace QtWaylandClient {
 
 class QWaylandWindow;
 class QWaylandExtendedSurface;
+class QWaylandXdgWmBase;
 
 class Q_WAYLAND_CLIENT_EXPORT QWaylandXdgPopup : public QWaylandShellSurface
+        , public QtWayland::xdg_positioner
+        , public QtWayland::xdg_surface
         , public QtWayland::xdg_popup
 {
     Q_OBJECT
 public:
-    QWaylandXdgPopup(struct ::xdg_popup *popup, QWaylandWindow *window);
+    QWaylandXdgPopup(QWaylandXdgWmBase *shell, QtWayland::xdg_surface *parentSurface, QWaylandWindow *window);
     virtual ~QWaylandXdgPopup();
 
 private:

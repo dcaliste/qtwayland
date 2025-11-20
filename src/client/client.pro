@@ -60,8 +60,8 @@ SOURCES +=  qwaylandintegration.cpp \
             qwaylandshellsurface.cpp \
             qwaylandwlshellsurface.cpp \
             qwaylandwlshellintegration.cpp \
-            qwaylandxdgshell.cpp \
-            qwaylandxdgsurface.cpp \
+            qwaylandxdgwmbase.cpp \
+            qwaylandxdgtoplevel.cpp \
             qwaylandxdgpopup_p.cpp \
             qwaylandxdgshellintegration.cpp \
             qwaylandextendedsurface.cpp \
@@ -96,8 +96,8 @@ HEADERS +=  qwaylandintegration_p.h \
             qwaylandshellsurface_p.h \
             qwaylandwlshellsurface_p.h \
             qwaylandwlshellintegration_p.h \
-            qwaylandxdgshell_p.h \
-            qwaylandxdgsurface_p.h \
+            qwaylandxdgwmbase_p.h \
+            qwaylandxdgtoplevel_p.h \
             qwaylandxdgpopup_p.h \
             qwaylandxdgshellintegration_p.h \
             qwaylandextendedsurface_p.h \

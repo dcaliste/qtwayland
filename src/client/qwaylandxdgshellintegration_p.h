@@ -53,17 +53,17 @@ QT_BEGIN_NAMESPACE
 
 namespace QtWaylandClient {
 
-class QWaylandXdgShell;
+class QWaylandXdgWmBase;
 
 class Q_WAYLAND_CLIENT_EXPORT QWaylandXdgShellIntegration : public QWaylandShellIntegration
 {
 public:
     QWaylandXdgShellIntegration(QWaylandDisplay *display);
-    bool initialize(QWaylandDisplay *) Q_DECL_OVERRIDE { return m_xdgShell != Q_NULLPTR; }
+    bool initialize(QWaylandDisplay *) Q_DECL_OVERRIDE { return m_xdgWmBase != Q_NULLPTR; }
     QWaylandShellSurface *createShellSurface(QWaylandWindow *window) Q_DECL_OVERRIDE;
 
 private:
-    QWaylandXdgShell *m_xdgShell;
+    QWaylandXdgWmBase *m_xdgWmBase = nullptr;
 };
 
 }
